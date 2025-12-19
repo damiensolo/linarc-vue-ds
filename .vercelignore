@@ -1,0 +1,13 @@
+# Ignore files that don't need to be deployed
+node_modules
+.git
+.vercel
+dist
+.output
+.nuxt
+.nitro
+*.log
+.env.local
+.env.*.local
+.DS_Store
+

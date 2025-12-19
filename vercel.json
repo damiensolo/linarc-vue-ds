@@ -1,7 +1,6 @@
 {
-  "buildCommand": "pnpm build:ds && pnpm --filter nuxt-app build",
-  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter design-system build && pnpm --filter nuxt-app build",
+  "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nuxtjs",
   "outputDirectory": "packages/nuxt-app/.output"
 }
-

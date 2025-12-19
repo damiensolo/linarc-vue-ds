@@ -37,7 +37,24 @@ export default defineNuxtConfig({
     typeCheck: false, // Disable in dev for faster startup, use `pnpm typecheck` separately
   },
 
+  // Deployment configuration
+  // For GitHub Pages: uses static generation (SSG)
+  // For Vercel: uses SSR by default (can be overridden)
+  ssr:
+    process.env.NODE_ENV === "production" && process.env.GITHUB_PAGES === "true"
+      ? false
+      : true,
+
+  // GitHub Pages base URL configuration
+  // For root domain: baseURL: "/"
+  // For subdirectory (e.g., /linarc-vue-ds/): baseURL: "/linarc-vue-ds/"
   app: {
+    baseURL:
+      process.env.GITHUB_PAGES === "true"
+        ? process.env.GITHUB_REPOSITORY
+          ? `/${process.env.GITHUB_REPOSITORY.split("/")[1]}/`
+          : "/"
+        : "/",
     head: {
       title: "Linarc Data Management Platform",
       meta: [

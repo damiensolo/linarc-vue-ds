@@ -8,9 +8,13 @@
     "build": "pnpm --filter design-system build && pnpm --filter nuxt-app build",
     "build:ds": "pnpm --filter design-system build",
     "build:app": "pnpm --filter nuxt-app build",
+    "build:pages": "pnpm build:ds && pnpm --filter nuxt-app generate",
+    "preview": "pnpm --filter nuxt-app preview",
     "typecheck": "pnpm --recursive typecheck",
     "lint": "pnpm --recursive lint",
-    "clean": "pnpm --recursive clean"
+    "clean": "pnpm --recursive clean",
+    "deploy:vercel": "vercel",
+    "deploy:vercel:prod": "vercel --prod"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.121.0",

@@ -116,7 +116,10 @@ See `.cursorrules` for comprehensive development guidelines and best practices.
 
 - `pnpm dev` - Start Nuxt development server
 - `pnpm build:ds` - Build design system
-- `pnpm build:app` - Build Nuxt application
+- `pnpm build:app` - Build Nuxt application (SSR)
+- `pnpm build:pages` - Build for GitHub Pages (SSG)
+- `pnpm preview` - Preview production build locally
+- `pnpm deploy:vercel` - Deploy to Vercel (requires Vercel CLI)
 
 ### Design System
 
@@ -126,8 +129,30 @@ See `.cursorrules` for comprehensive development guidelines and best practices.
 
 See `packages/design-system/package.json` for all available scripts.
 
+## Deployment
+
+This project supports deployment to **Vercel** (recommended) and **GitHub Pages**.
+
+**Quick Deploy:**
+
+- **Vercel**: Import repository at [vercel.com](https://vercel.com) - auto-detects Nuxt 3
+- **GitHub Pages**: Push to `main` branch - automatic deployment via GitHub Actions
+
+**Build for GitHub Pages:**
+```bash
+pnpm build:pages
+```
+
+**Preview build locally:**
+```bash
+pnpm preview
+```
+
+**Full Guide:** See [`DEPLOYMENT.md`](DEPLOYMENT.md) for detailed deployment instructions.
+
 ## Documentation
 
+- **[Deployment Guide](DEPLOYMENT.md)** - Complete guide for deploying to Vercel and GitHub Pages
 - **[Figma Integration Guide](packages/design-system/FIGMA_INTEGRATION.md)** - Complete guide for syncing tokens from Figma
 - **[Design System README](packages/design-system/README.md)** - Component library documentation
 - **[Nuxt App README](packages/nuxt-app/README.md)** - Application documentation

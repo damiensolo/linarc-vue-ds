@@ -14,6 +14,9 @@ build/
 .nuxt/
 .nitro/
 
+# Vercel
+.vercel
+
 # Misc
 .DS_Store
 *.pem

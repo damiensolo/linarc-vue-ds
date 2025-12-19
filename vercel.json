@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pnpm --filter design-system build && pnpm --filter nuxt-app build",
-  "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "nuxtjs",
-  "outputDirectory": "packages/nuxt-app/.vercel/output"
+  "buildCommand": "cd ../.. && pnpm --filter design-system build && cd packages/nuxt-app && pnpm build",
+  "rootDirectory": "packages/nuxt-app",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "framework": "nuxtjs"
 }

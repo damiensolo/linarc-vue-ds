@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { cn } from '@linarc/design-system'
+import { cn } from '@/utils'
 
 interface Props {
   class?: string

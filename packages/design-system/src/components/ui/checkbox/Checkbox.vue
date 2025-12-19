@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { CheckboxRoot, CheckboxIndicator } from 'reka-ui'
 import { CheckIcon } from 'lucide-vue-next'
-import { cn } from '@linarc/design-system'
+import { cn } from '@/utils'
 
 interface Props {
     checked?: boolean | 'indeterminate'

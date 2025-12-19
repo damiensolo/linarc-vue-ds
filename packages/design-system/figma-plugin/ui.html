@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Design Token Sync</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        padding: 16px;
+        background: #ffffff;
+        color: #333;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #666;
+      }
+
+      input,
+      select {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+
+      input:disabled {
+        background: #f5f5f5;
+        color: #999;
+      }
+
+      button {
+        padding: 10px 16px;
+        background: #18a0fb;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #1590e6;
+      }
+
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      button.secondary {
+        background: #7c3aed;
+      }
+
+      button.secondary:hover {
+        background: #6d28d9;
+      }
+
+      .status {
+        padding: 12px;
+        border-radius: 4px;
+        font-size: 13px;
+        display: none;
+      }
+
+      .status.success {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #4caf50;
+        display: block;
+      }
+
+      .status.error {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #f44336;
+        display: block;
+      }
+
+      .status.info {
+        background: #e3f2fd;
+        color: #1565c0;
+        border: 1px solid #2196f3;
+        display: block;
+      }
+
+      .token-summary {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .token-summary strong {
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Design Token Sync</h1>
+
+      <div class="section">
+        <label>File Key</label>
+        <input type="text" id="fileKey" disabled />
+      </div>
+
+      <div class="section">
+        <label>File Name</label>
+        <input type="text" id="fileName" disabled />
+      </div>
+
+      <div class="section">
+        <label>Server URL</label>
+        <input
+          type="text"
+          id="serverUrl"
+          value="http://localhost:3001"
+          placeholder="http://localhost:3001"
+        />
+      </div>
+
+      <div class="section">
+        <label>Node ID (optional)</label>
+        <input type="text" id="nodeId" value="0:1" placeholder="0:1" />
+      </div>
+
+      <button id="syncButton">Sync Tokens</button>
+
+      <button id="restartButton" class="secondary">Restart Dev Server</button>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <script>
+      const fileKeyInput = document.getElementById("fileKey");
+      const fileNameInput = document.getElementById("fileName");
+      const serverUrlInput = document.getElementById("serverUrl");
+      const nodeIdInput = document.getElementById("nodeId");
+      const syncButton = document.getElementById("syncButton");
+      const restartButton = document.getElementById("restartButton");
+      const statusDiv = document.getElementById("status");
+
+      // Listen for messages from plugin code
+      window.onmessage = (event) => {
+        const msg = event.data.pluginMessage;
+
+        if (msg.type === "init") {
+          fileKeyInput.value = msg.fileKey || "";
+          fileNameInput.value = msg.fileName || "";
+        }
+
+        if (msg.type === "success") {
+          showStatus("success", msg.message);
+          if (msg.result && msg.result.tokens) {
+            const tokens = msg.result.tokens;
+            const summary = `Colors: ${tokens.colors}, Radius: ${tokens.borderRadius}, Spacing: ${tokens.spacing}, Shadows: ${tokens.shadows}`;
+            statusDiv.innerHTML += `<div class="token-summary"><strong>Synced:</strong> ${summary}</div>`;
+          }
+        }
+
+        if (msg.type === "error") {
+          showStatus("error", msg.message);
+        }
+
+        if (msg.type === "restart-success") {
+          if (msg.result && msg.result.serverReady) {
+            showStatus(
+              "success",
+              "✅ Dev server restarted and is running! Check http://localhost:3000"
+            );
+          } else {
+            showStatus("success", msg.message + " (checking server status...)");
+            // Poll for server readiness
+            checkServerStatus(serverUrlInput.value);
+          }
+        }
+
+        if (msg.type === "restart-error") {
+          showStatus("error", msg.message);
+        }
+      };
+
+      syncButton.addEventListener("click", () => {
+        syncButton.disabled = true;
+        statusDiv.className = "status info";
+        statusDiv.textContent = "Syncing tokens...";
+        statusDiv.style.display = "block";
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "sync-tokens",
+              serverUrl: serverUrlInput.value,
+              nodeId: nodeIdInput.value,
+            },
+          },
+          "*"
+        );
+
+        // Re-enable button after 2 seconds
+        setTimeout(() => {
+          syncButton.disabled = false;
+        }, 2000);
+      });
+
+      restartButton.addEventListener("click", () => {
+        restartButton.disabled = true;
+        statusDiv.className = "status info";
+        statusDiv.textContent = "Restarting dev server...";
+        statusDiv.style.display = "block";
+
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: "restart-dev-server",
+              serverUrl: serverUrlInput.value,
+            },
+          },
+          "*"
+        );
+
+        // Re-enable button after 3 seconds
+        setTimeout(() => {
+          restartButton.disabled = false;
+        }, 3000);
+      });
+
+      function showStatus(type, message) {
+        statusDiv.className = `status ${type}`;
+        statusDiv.textContent = message;
+        statusDiv.style.display = "block";
+      }
+
+      async function checkServerStatus(serverUrl) {
+        const maxAttempts = 10;
+        for (let i = 0; i < maxAttempts; i++) {
+          try {
+            const response = await fetch("http://localhost:3000", {
+              method: "GET",
+              mode: "no-cors", // Avoid CORS issues
+            });
+            // If we get here, server is responding
+            showStatus(
+              "success",
+              "✅ Dev server is up and running! http://localhost:3000"
+            );
+            return;
+          } catch (error) {
+            // Server not ready yet
+            if (i < maxAttempts - 1) {
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+            } else {
+              showStatus(
+                "info",
+                "⚠️ Server may still be starting. Check the dev server window."
+              );
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

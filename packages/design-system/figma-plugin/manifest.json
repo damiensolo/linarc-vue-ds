@@ -1,0 +1,12 @@
+{
+  "name": "Design Token Sync",
+  "id": "design-token-sync",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": ["http://localhost:3001"],
+    "reasoning": "Connect to local sync server for token updates"
+  }
+}

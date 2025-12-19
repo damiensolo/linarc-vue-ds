@@ -1,0 +1,235 @@
+# Linarc Vue Design System - Cursor AI Development Rules
+
+You are an expert in TypeScript, Node.js, Vite, Vue.js, Vue Router, Pinia, VueUse, NuxtJS, Vue 3, ShadCN Vue, Reka UI, Tailwind CSS, and monorepo architecture, with a deep understanding of best practices and performance optimization techniques in these technologies.
+
+## Project Structure
+
+This is a monorepo with two main packages:
+
+- `packages/design-system/` - Vue 3 component library (ShadCN Vue, Reka UI, Tailwind)
+- `packages/nuxt-app/` - Nuxt 3 application consuming the design system
+
+## Code Style and Structure
+
+- Write concise, technical TypeScript code with accurate examples
+- Use Composition API and declarative programming patterns; avoid Options API
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Structure files: exported component, composables, helpers, static content, types
+
+## Naming Conventions
+
+- Use lowercase with dashes for directories (e.g., `components/auth-wizard`)
+- Use PascalCase for component names (e.g., `AuthWizard.vue`)
+- Use camelCase for composables (e.g., `useAuthState.ts`)
+- Use kebab-case for file names (e.g., `user-profile.vue`)
+
+## TypeScript Usage
+
+- Use TypeScript for all code; prefer types over interfaces
+- Avoid enums; use const objects instead
+- Use Vue 3 with TypeScript, leveraging `defineComponent` and `PropType`
+- Export types from `src/types/index.ts` in design system
+
+## Syntax and Formatting
+
+- Use arrow functions for methods and computed properties
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Use template syntax for declarative rendering
+- Use `<script setup>` syntax for all Vue components
+
+## UI and Styling
+
+- Use ShadCN Vue, Reka UI, and Tailwind CSS for components and styling
+- Implement responsive design with Tailwind CSS; use mobile-first approach
+- Use design system components from `@linarc/design-system` in the Nuxt app
+- Never create duplicate components that exist in the design system
+
+## Design System Component Development
+
+### Creating New Components
+
+1. Components go in `packages/design-system/src/components/ui/[component-name]/`
+2. Follow ShadCN Vue patterns:
+   - Use Reka UI primitives for accessibility
+   - Use `class-variance-authority` for variant management
+   - Use `cn()` utility from `@/utils` for className merging
+   - Export from `packages/design-system/src/components/index.ts`
+
+### Component Structure
+
+```vue
+<template>
+  <div :class="cn(baseStyles, variantStyles, props.class)">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { cn } from "@/utils";
+import { cva, type VariantProps } from "class-variance-authority";
+import type { HTMLAttributes } from "vue";
+
+const componentVariants = cva("base-classes", {
+  variants: {
+    variant: {
+      default: "default-classes",
+      // ... other variants
+    },
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+});
+
+type ComponentVariants = VariantProps<typeof componentVariants>;
+
+interface Props extends HTMLAttributes {
+  variant?: ComponentVariants["variant"];
+  class?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: "default",
+  class: "",
+});
+</script>
+```
+
+## Monorepo Development
+
+- Design system components are in `packages/design-system/src/components/ui/`
+- Nuxt app imports from `@linarc/design-system`
+- When adding new components, export them from `packages/design-system/src/components/index.ts`
+- Use workspace protocol (`workspace:*`) for internal package dependencies
+
+## Nuxt-Specific Guidelines
+
+- Follow Nuxt 3 directory structure (`pages/`, `components/`, `composables/`)
+- Use Nuxt's built-in features:
+  - Auto-imports for components and composables
+  - File-based routing in `pages/` directory
+  - Server routes in `server/` directory
+  - Leverage Nuxt plugins for global functionality
+- Use `useFetch` and `useAsyncData` for data fetching
+- Implement SEO best practices using Nuxt's `useHead` and `useSeoMeta`
+- Import design system components: `import { Button, Card } from '@linarc/design-system'`
+
+## Vue 3 and Composition API Best Practices
+
+- Use `<script setup>` syntax for concise component definitions
+- Leverage `ref`, `reactive`, and `computed` for reactive state management
+- Use `provide/inject` for dependency injection when appropriate
+- Implement custom composables for reusable logic
+- Use VueUse composables when available (`@vueuse/core`)
+
+## Performance Optimization
+
+- Leverage Nuxt's built-in performance optimizations
+- Use Suspense for asynchronous components
+- Implement lazy loading for routes and components
+- Optimize images: use WebP format, include size data, implement lazy loading
+- Optimize Web Vitals (LCP, CLS, FID)
+
+## Figma Integration
+
+### Using Figma MCP Tools
+
+When working with Figma designs:
+
+1. **Fetch Design Context**: Use `mcp_Figma_get_design_context` to get component designs
+2. **Get Variables**: Use `mcp_Figma_get_variable_defs` to fetch design tokens
+3. **Sync Tokens**: Run `pnpm --filter design-system sync:figma` to sync tokens
+
+### Figma Workflow
+
+- Extract file key from Figma URL: `https://figma.com/design/[fileKey]/...`
+- Use node IDs from Figma (format: `123:456` or `123-456`)
+- When implementing from Figma:
+  1. Get design context using MCP
+  2. Identify design system components to use
+  3. Compose components following the design
+  4. Use design tokens from Figma variables
+
+### Example Prompts for Figma
+
+- "Get design context from Figma file [fileKey] node [nodeId] and create a Vue component using our design system"
+- "Sync design tokens from Figma file [fileKey]"
+- "Fetch Figma variables from node [nodeId] and update the design system tokens"
+
+## State Management
+
+- Use Pinia for state management in Nuxt app
+- Create stores in `packages/nuxt-app/stores/`
+- Use composables for shared logic between design system and app
+
+## Tailwind CSS Guidelines
+
+- Use design tokens from CSS variables (defined in `packages/design-system/src/style.css`)
+- Extend Tailwind config in Nuxt app to match design system
+- Use Tailwind utility classes; avoid custom CSS when possible
+- Follow mobile-first responsive design patterns
+
+## Import Patterns
+
+### In Design System
+
+```typescript
+import { cn } from "@/utils";
+import type { ComponentProps } from "@/types";
+```
+
+### In Nuxt App
+
+```typescript
+import { Button, Card } from "@linarc/design-system";
+import { useAuthStore } from "~/stores/auth";
+```
+
+## Testing and Quality
+
+- Write type-safe code; TypeScript errors should be resolved
+- Use descriptive prop names and JSDoc comments for complex components
+- Follow accessibility best practices (use Reka UI primitives)
+- Ensure components are responsive and work across devices
+
+## Common Tasks
+
+### Adding a New Design System Component
+
+1. Create component in `packages/design-system/src/components/ui/[name]/[Name].vue`
+2. Follow ShadCN Vue patterns with Reka UI primitives
+3. Export from `packages/design-system/src/components/index.ts`
+4. Use in Nuxt app: `import { NewComponent } from '@linarc/design-system'`
+
+### Building a Page in Nuxt App
+
+1. Create page in `packages/nuxt-app/pages/[route].vue`
+2. Import design system components
+3. Use Pinia stores for state if needed
+4. Use VueUse composables for common functionality
+
+### Syncing Figma Tokens
+
+1. Use Figma MCP to get variable definitions
+2. Run sync script: `pnpm --filter design-system sync:figma`
+3. Review generated tokens in `packages/design-system/src/tokens/figma-tokens.ts`
+4. Update components if token structure changes
+
+## Important Reminders
+
+- Always use design system components in the Nuxt app; don't recreate them
+- Keep design system components generic and reusable
+- Use TypeScript strictly; avoid `any` types
+- Follow the established file structure
+- Export components properly from index files
+- Use workspace protocol for internal dependencies
+- Leverage Figma MCP for design reference and token sync
+
+## Documentation
+
+- Document complex components with JSDoc comments
+- Update README files when adding significant features
+- Document Figma integration workflow in `packages/design-system/FIGMA_SETUP.md`
+
+Follow the official Nuxt.js, Vue.js, ShadCN Vue, and Reka UI documentation for up-to-date best practices.

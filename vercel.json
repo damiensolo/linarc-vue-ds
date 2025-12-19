@@ -1,14 +1,6 @@
 {
-  "buildCommand": "pnpm build:app",
-  "outputDirectory": "packages/nuxt-app/.output/public",
+  "buildCommand": "pnpm build:ds && pnpm --filter nuxt-app build",
   "installCommand": "pnpm install",
   "framework": "nuxtjs",
-  "devCommand": "pnpm dev",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "outputDirectory": "packages/nuxt-app/.output"
 }
-

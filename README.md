@@ -131,20 +131,23 @@ See `packages/design-system/package.json` for all available scripts.
 
 ## Deployment
 
-This project supports deployment to **Vercel** (recommended) and **GitHub Pages**.
+This project supports deployment to both **Vercel** (recommended) and **GitHub Pages** (backup).
 
 **Quick Deploy:**
 
-- **Vercel**: Import repository at [vercel.com](https://vercel.com) - auto-detects Nuxt 3
-- **GitHub Pages**: Push to `main` branch - automatic deployment via GitHub Actions
+- **Vercel** (Primary): Import repository at [vercel.com](https://vercel.com) - auto-detects Nuxt 3
+- **GitHub Pages** (Backup): Push to `main` branch - automatic deployment via GitHub Actions
 
-**Build for GitHub Pages:**
+**Build commands:**
+
 ```bash
+# For Vercel (SSR)
+pnpm build:ds && pnpm --filter nuxt-app build
+
+# For GitHub Pages (SSG)
 pnpm build:pages
-```
 
-**Preview build locally:**
-```bash
+# Preview locally
 pnpm preview
 ```
 

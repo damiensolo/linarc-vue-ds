@@ -4,3 +4,4 @@
   "framework": "nuxtjs",
   "outputDirectory": "packages/nuxt-app/.output"
 }
+

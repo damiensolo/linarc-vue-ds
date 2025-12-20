@@ -274,12 +274,19 @@
           if (msg.result && msg.result.serverReady) {
             showStatus(
               "success",
-              "✅ Dev server restarted and is running! Check http://localhost:3000"
+              "✅ Dev server restarted and is running! http://localhost:3000"
             );
+          } else if (msg.result && msg.result.serverStarted) {
+            // Server started but not confirmed ready yet - poll via sync server
+            showStatus("info", msg.message + " (verifying server status...)");
+            checkServerStatusViaSyncServer(serverUrlInput.value);
           } else {
-            showStatus("success", msg.message + " (checking server status...)");
-            // Poll for server readiness
-            checkServerStatus(serverUrlInput.value);
+            // Server restart initiated but status unknown
+            showStatus("info", msg.message + " (this may take a moment...)");
+            // Give it a moment then check
+            setTimeout(() => {
+              checkServerStatusViaSyncServer(serverUrlInput.value);
+            }, 3000);
           }
         }
 
@@ -356,28 +363,56 @@
         statusDiv.style.display = "block";
       }
 
-      async function checkServerStatus(serverUrl) {
-        const maxAttempts = 10;
+      async function checkServerStatusViaSyncServer(syncServerUrl) {
+        const maxAttempts = 15; // More attempts since server might take time
         for (let i = 0; i < maxAttempts; i++) {
           try {
-            const response = await fetch("http://localhost:3000", {
+            // Ask sync server to check dev server status
+            const response = await fetch(`${syncServerUrl}/api/check-dev-server`, {
               method: "GET",
-              mode: "no-cors", // Avoid CORS issues
+              headers: {
+                "Content-Type": "application/json",
+              },
             });
-            // If we get here, server is responding
-            showStatus(
-              "success",
-              "✅ Dev server is up and running! http://localhost:3000"
-            );
-            return;
-          } catch (error) {
-            // Server not ready yet
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.running) {
+                showStatus(
+                  "success",
+                  "✅ Dev server is up and running! http://localhost:3000"
+                );
+                return;
+              }
+            }
+
+            // Server not ready yet, wait and retry
             if (i < maxAttempts - 1) {
+              const remaining = maxAttempts - i - 1;
+              showStatus(
+                "info",
+                `⏳ Waiting for server to start... (${remaining} attempts remaining)`
+              );
               await new Promise((resolve) => setTimeout(resolve, 2000));
             } else {
               showStatus(
                 "info",
-                "⚠️ Server may still be starting. Check the dev server window."
+                "⚠️ Server may still be starting. Check http://localhost:3000 in your browser."
+              );
+            }
+          } catch (error) {
+            // Network error or server not responding
+            if (i < maxAttempts - 1) {
+              const remaining = maxAttempts - i - 1;
+              showStatus(
+                "info",
+                `⏳ Checking server status... (${remaining} attempts remaining)`
+              );
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+            } else {
+              showStatus(
+                "info",
+                "⚠️ Could not verify server status. Check http://localhost:3000 manually."
               );
             }
           }

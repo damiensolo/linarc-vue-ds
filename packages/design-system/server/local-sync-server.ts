@@ -151,14 +151,18 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
   try {
     console.log("\n🔄 Restarting dev server...\n");
 
+    // Detect OS and choose appropriate script
+    const platform = process.platform;
+    const isWindows = platform === "win32";
+    const scriptName = isWindows
+      ? "restart-dev-server.ps1"
+      : "restart-dev-server.sh";
+    
     // Path to restart script - resolve from package root
-    const scriptPath = resolve(
-      PACKAGE_ROOT,
-      "scripts",
-      "restart-dev-server.ps1"
-    );
+    const scriptPath = resolve(PACKAGE_ROOT, "scripts", scriptName);
     console.log(`📝 Script path: ${scriptPath}`);
     console.log(`📁 Package root: ${PACKAGE_ROOT}`);
+    console.log(`🖥️  Platform: ${platform}`);
 
     // Check if script exists
     const fs = await import("fs");
@@ -166,8 +170,15 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
       throw new Error(`Script not found at: ${scriptPath}`);
     }
 
-    // Execute PowerShell script using execAsync (original working method)
-    const command = `powershell -ExecutionPolicy Bypass -File "${scriptPath}"`;
+    // Execute script based on platform
+    let command: string;
+    if (isWindows) {
+      command = `powershell -ExecutionPolicy Bypass -File "${scriptPath}"`;
+    } else {
+      // Make sure script is executable
+      await execAsync(`chmod +x "${scriptPath}"`);
+      command = `bash "${scriptPath}"`;
+    }
 
     console.log(`🔧 Executing: ${command}`);
 
@@ -178,6 +189,7 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
     });
 
     // PowerShell often writes to stderr even for normal output
+    // Bash scripts also write to stderr for info messages
     const output = stdout || stderr || "";
 
     if (output.trim()) {
@@ -187,9 +199,9 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
 
     // Check if server is ready by looking for success indicators in output
     const serverReady = output.includes("[SUCCESS] Server is up and running");
-    const serverStarted = output.includes(
-      "[SUCCESS] Dev server process started"
-    );
+    const serverStarted =
+      output.includes("[SUCCESS] Dev server process started") ||
+      output.includes("Dev server process started!");
 
     // Poll server health endpoint to confirm it's running
     let healthCheckPassed = false;
@@ -240,6 +252,7 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
         ? "Dev server restart initiated (still starting...)"
         : "Dev server restart initiated",
       serverReady: healthCheckPassed,
+      serverStarted: serverStarted || healthCheckPassed,
       output: output,
     });
   } catch (error: any) {
@@ -258,6 +271,76 @@ async function handleRestart(req: IncomingMessage, res: ServerResponse) {
   }
 }
 
+async function handleCheckDevServer(
+  req: IncomingMessage,
+  res: ServerResponse
+) {
+  if (req.method === "OPTIONS") {
+    sendJSON(res, 200, {});
+    return;
+  }
+
+  if (req.method !== "GET") {
+    sendJSON(res, 405, { error: "Method not allowed" });
+    return;
+  }
+
+  try {
+    // Check if dev server is responding on port 3000
+    const devServerUrl = "http://localhost:3000";
+    const maxAttempts = 1; // Just one quick check
+    let isRunning = false;
+
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const healthCheck = await new Promise<boolean>((resolve) => {
+          const req = request(
+            {
+              hostname: "localhost",
+              port: 3000,
+              path: "/",
+              method: "GET",
+              timeout: 2000,
+            },
+            (res) => {
+              // Any response (200, 404, etc.) means server is up
+              resolve(true);
+            }
+          );
+          req.on("error", () => resolve(false));
+          req.on("timeout", () => {
+            req.destroy();
+            resolve(false);
+          });
+          req.end();
+        });
+
+        if (healthCheck) {
+          isRunning = true;
+          break;
+        }
+      } catch (error) {
+        // Server not responding
+      }
+    }
+
+    sendJSON(res, 200, {
+      running: isRunning,
+      url: devServerUrl,
+      message: isRunning
+        ? "Dev server is running"
+        : "Dev server is not responding",
+    });
+  } catch (error: any) {
+    console.error("❌ Check dev server error:", error);
+    sendJSON(res, 500, {
+      error: "Failed to check dev server",
+      message: error.message,
+      running: false,
+    });
+  }
+}
+
 function startServer(port: number, triedPorts: number[] = []): void {
   const server = createServer((req, res) => {
     // Log all incoming requests for debugging
@@ -270,6 +353,8 @@ function startServer(port: number, triedPorts: number[] = []): void {
     } else if (req.url === "/api/restart-dev-server") {
       console.log("🔄 Restart endpoint called");
       handleRestart(req, res);
+    } else if (req.url === "/api/check-dev-server") {
+      handleCheckDevServer(req, res);
     } else if (req.url === "/health") {
       sendJSON(res, 200, { status: "ok", port });
     } else {
@@ -282,6 +367,9 @@ function startServer(port: number, triedPorts: number[] = []): void {
     console.log(`📡 Endpoint: POST http://localhost:${port}/api/sync-tokens`);
     console.log(
       `🔄 Endpoint: POST http://localhost:${port}/api/restart-dev-server`
+    );
+    console.log(
+      `🔍 Endpoint: GET http://localhost:${port}/api/check-dev-server`
     );
     console.log(`💚 Health check: http://localhost:${port}/health\n`);
     if (port !== PORT) {

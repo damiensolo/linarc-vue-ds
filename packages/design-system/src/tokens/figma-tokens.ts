@@ -2,7 +2,7 @@
  * Figma Design Tokens
  * 
  * Auto-synced from Figma via MCP.
- * Last synced: 2025-12-20T17:44:42.927Z
+ * Last synced: 2025-12-20T22:16:05.200Z
  * File: rDLR9ZCB0Dq2AmRvxrifds
  */
 
@@ -21,7 +21,7 @@ export const figmaTokens: DesignTokens = {
     "slate-200": "#e2e8f0",
     "slate-50": "#f8fafc",
     "indigo-900": "#312e81",
-    "indigo-600": "#0059ff",
+    "indigo-600": "#ff0d00",
     "indigo-500": "#6366f1",
     "indigo-800": "#3730a3",
     "indigo-300": "#a5b4fc",

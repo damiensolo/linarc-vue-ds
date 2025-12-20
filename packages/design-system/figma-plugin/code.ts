@@ -73,20 +73,26 @@ figma.ui.onmessage = async (msg) => {
       // Auto-start server if not running
       try {
         const helperUrl = "http://localhost:2999";
+        const checkController = new AbortController();
+        const checkTimeout = setTimeout(() => checkController.abort(), 2000);
         const checkResponse = await fetch(`${helperUrl}/check-sync-server`, {
           method: "GET",
-          signal: AbortSignal.timeout(2000),
+          signal: checkController.signal,
         });
+        clearTimeout(checkTimeout);
         
         if (checkResponse.ok) {
           const checkData = await checkResponse.json();
           if (!checkData.running) {
             // Server not running, try to start it
             console.log("🔄 Sync server not running, attempting to start...");
+            const startController = new AbortController();
+            const startTimeout = setTimeout(() => startController.abort(), 15000);
             const startResponse = await fetch(`${helperUrl}/start-sync-server`, {
               method: "POST",
-              signal: AbortSignal.timeout(15000),
+              signal: startController.signal,
             });
+            clearTimeout(startTimeout);
             
             if (startResponse.ok) {
               const startData = await startResponse.json();

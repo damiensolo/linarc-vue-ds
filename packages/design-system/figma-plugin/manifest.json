@@ -6,7 +6,13 @@
   "ui": "ui.html",
   "editorType": ["figma"],
   "networkAccess": {
-    "allowedDomains": ["http://localhost:3001"],
-    "reasoning": "Connect to local sync server for token updates"
+    "allowedDomains": [
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "http://localhost:3003",
+      "http://localhost:3004",
+      "http://localhost:3005"
+    ],
+    "reasoning": "Connect to local sync server for token updates. Server can run on ports 3001-3005 if default port is in use."
   }
 }

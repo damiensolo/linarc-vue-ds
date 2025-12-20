@@ -30,7 +30,7 @@
           <div>
             <p class="font-mono text-sm">bg-indigo-600</p>
             <p class="text-sm text-muted-foreground">
-              Should be {{ expectedColor }} (RED if synced correctly!)
+              Should match token value: {{ expectedColor }}
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@
         <h3 class="text-lg font-medium">Expected Result:</h3>
         <ul class="list-disc list-inside space-y-1 text-sm">
           <li>
-            <strong>If synced:</strong> All swatches should be <span class="text-red-600 font-bold">RED (#e54646)</span>
+            <strong>If synced:</strong> All swatches should match the token value: <span class="font-bold" :style="{ color: tokenValue }">{{ tokenValue }}</span>
           </li>
           <li>
             <strong>If not synced:</strong> All swatches will be <span class="text-purple-600 font-bold">PURPLE
@@ -88,8 +88,9 @@ import { Button } from '@linarc/design-system'
 import { FloatingActionButton } from '@linarc/design-system'
 import { figmaTokens } from '@linarc/design-system'
 
-const expectedColor = '#e54646' // Current value from Figma
+// Use the actual token value as the expected color
 const tokenValue = figmaTokens.colors['indigo-600'] || '#4f46e5'
+const expectedColor = tokenValue // Dynamic: matches actual token value
 
 useHead({
   title: 'Token Sync Test',

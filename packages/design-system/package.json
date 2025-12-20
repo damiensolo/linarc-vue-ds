@@ -27,6 +27,8 @@
     "sync:figma:interactive": "tsx scripts/sync-figma-interactive.ts",
     "dev:sync-server": "tsx server/local-sync-server.ts",
     "dev:sync-server:clean": "powershell -ExecutionPolicy Bypass -File scripts/start-sync-server.ps1",
+    "dev:sync-server:auto": "powershell -ExecutionPolicy Bypass -File scripts/start-sync-server-auto.ps1",
+    "dev:auto-start": "tsx server/auto-start-helper.ts",
     "dev:webhook-server": "tsx server/webhook-handler.ts",
     "build:plugin": "cd figma-plugin && pnpm install && pnpm build"
   },

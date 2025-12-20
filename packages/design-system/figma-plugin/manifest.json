@@ -7,12 +7,13 @@
   "editorType": ["figma"],
   "networkAccess": {
     "allowedDomains": [
+      "http://localhost:3000",
       "http://localhost:3001",
       "http://localhost:3002",
       "http://localhost:3003",
       "http://localhost:3004",
       "http://localhost:3005"
     ],
-    "reasoning": "Connect to local sync server for token updates. Server can run on ports 3001-3005 if default port is in use."
+    "reasoning": "Connect to auto-start helper (port 3000) and sync server (ports 3001-3005) for token updates. Helper auto-starts sync server when needed."
   }
 }

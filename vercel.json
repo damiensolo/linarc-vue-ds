@@ -1,6 +1,5 @@
 {
-  "buildCommand": "node scripts/vercel-build.js",
+  "buildCommand": "node scripts/vercel-build.mjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "nuxtjs",
   "outputDirectory": ".vercel/output"
 }

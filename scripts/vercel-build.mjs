@@ -5,7 +5,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, cpSync, mkdirSync } from 'fs';
+import { existsSync, cpSync, mkdirSync, rmSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -28,13 +28,33 @@ const rootOutput = resolve(repoRoot, '.vercel/output');
 
 if (existsSync(nuxtOutput)) {
   // Ensure .vercel directory exists at root
-  mkdirSync(resolve(repoRoot, '.vercel'), { recursive: true });
+  const vercelDir = resolve(repoRoot, '.vercel');
+  if (!existsSync(vercelDir)) {
+    mkdirSync(vercelDir, { recursive: true });
+  }
+  
+  // Remove existing output if it exists
+  if (existsSync(rootOutput)) {
+    rmSync(rootOutput, { recursive: true, force: true });
+  }
   
   // Copy output to root
   cpSync(nuxtOutput, rootOutput, { recursive: true, force: true });
   console.log('✅ Output copied to repo root: .vercel/output');
+  
+  // Verify the copy worked
+  if (!existsSync(rootOutput)) {
+    console.error('❌ Error: Output copy failed');
+    process.exit(1);
+  }
+  
+  // List what was copied for debugging
+  const contents = readdirSync(rootOutput);
+  console.log('📋 Output contents:', contents.join(', '));
 } else {
   console.error('❌ Error: Nuxt output not found at:', nuxtOutput);
+  console.error('   Current working directory:', process.cwd());
+  console.error('   Repo root:', repoRoot);
   process.exit(1);
 }
 

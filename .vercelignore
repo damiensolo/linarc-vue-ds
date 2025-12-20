@@ -1,13 +1,37 @@
-# Ignore files that don't need to be deployed
-node_modules
+# Git
 .git
-.vercel
+.gitignore
+
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs (except .vercel/output which we need)
 dist
+build
 .output
 .nuxt
 .nitro
-*.log
+
+# Environment
+.env
 .env.local
 .env.*.local
-.DS_Store
 
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage
+*.log
+
+# Figma cache
+packages/design-system/src/tokens/.figma-cache

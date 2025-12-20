@@ -10,6 +10,7 @@ import { createServer, IncomingMessage, ServerResponse, request } from "http";
 import { exec } from "child_process";
 import { promisify } from "util";
 import { syncFromFigmaMCP } from "../scripts/sync-from-figma-mcp.js";
+import { handleProductionSync } from "./production-sync-handler.js";
 import { fileURLToPath } from "url";
 import { dirname, join, resolve } from "path";
 
@@ -30,6 +31,10 @@ interface SyncRequest {
   variables: Record<string, any>;
   fileKey?: string;
   nodeId?: string;
+  syncMode?: "local" | "production";
+  githubToken?: string;
+  createPR?: boolean;
+  branchName?: string;
 }
 
 function sendJSON(res: ServerResponse, statusCode: number, data: any) {
@@ -58,7 +63,7 @@ function handleSync(req: IncomingMessage, res: ServerResponse) {
     body += chunk.toString();
   });
 
-  req.on("end", () => {
+  req.on("end", async () => {
     try {
       const data: SyncRequest = JSON.parse(body);
 
@@ -69,23 +74,59 @@ function handleSync(req: IncomingMessage, res: ServerResponse) {
         return;
       }
 
-      console.log(`\n🔄 Syncing tokens from Figma plugin...`);
-      console.log(`📁 File: ${data.fileKey || "unknown"}`);
-      console.log(`📍 Node: ${data.nodeId || "root"}\n`);
+      const syncMode = data.syncMode || "local";
 
-      const tokens = syncFromFigmaMCP(data.variables);
+      if (syncMode === "production") {
+        // Production sync: commit to GitHub
+        console.log(`\n🚀 Production sync to GitHub...`);
+        console.log(`📁 File: ${data.fileKey || "unknown"}`);
+        console.log(`📍 Node: ${data.nodeId || "root"}\n`);
 
-      sendJSON(res, 200, {
-        success: true,
-        message: "Tokens synced successfully",
-        tokens: {
-          colors: Object.keys(tokens.colors).length,
-          borderRadius: Object.keys(tokens.borderRadius).length,
-          spacing: Object.keys(tokens.spacing).length,
-          shadows: Object.keys(tokens.shadows).length,
-        },
-        timestamp: new Date().toISOString(),
-      });
+        try {
+          const result = await handleProductionSync({
+            variables: data.variables,
+            fileKey: data.fileKey,
+            nodeId: data.nodeId,
+            githubToken: data.githubToken,
+            createPR: data.createPR,
+            branchName: data.branchName,
+          });
+
+          sendJSON(res, 200, {
+            success: true,
+            message: result.message,
+            commitSha: result.commitSha,
+            prUrl: result.prUrl,
+            branch: result.branch,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error: any) {
+          console.error("❌ Production sync error:", error);
+          sendJSON(res, 500, {
+            error: "Failed to sync tokens to production",
+            message: error.message,
+          });
+        }
+      } else {
+        // Local sync: update files locally
+        console.log(`\n🔄 Syncing tokens from Figma plugin (local)...`);
+        console.log(`📁 File: ${data.fileKey || "unknown"}`);
+        console.log(`📍 Node: ${data.nodeId || "root"}\n`);
+
+        const tokens = syncFromFigmaMCP(data.variables);
+
+        sendJSON(res, 200, {
+          success: true,
+          message: "Tokens synced successfully",
+          tokens: {
+            colors: Object.keys(tokens.colors).length,
+            borderRadius: Object.keys(tokens.borderRadius).length,
+            spacing: Object.keys(tokens.spacing).length,
+            shadows: Object.keys(tokens.shadows).length,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
     } catch (error: any) {
       console.error("❌ Sync error:", error);
       sendJSON(res, 500, {
@@ -224,6 +265,8 @@ function startServer(port: number, triedPorts: number[] = []): void {
 
     if (req.url === "/api/sync-tokens") {
       handleSync(req, res);
+    } else if (req.url === "/api/sync-to-production") {
+      handleSync(req, res); // Same handler, checks syncMode
     } else if (req.url === "/api/restart-dev-server") {
       console.log("🔄 Restart endpoint called");
       handleRestart(req, res);

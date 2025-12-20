@@ -152,6 +152,29 @@
         <input type="text" id="nodeId" value="0:1" placeholder="0:1" />
       </div>
 
+      <div class="section">
+        <label>Sync Mode</label>
+        <select id="syncMode">
+          <option value="local">Local (localhost)</option>
+          <option value="production">Production (GitHub)</option>
+        </select>
+      </div>
+
+      <div class="section" id="githubTokenSection" style="display: none">
+        <label>GitHub Token</label>
+        <input
+          type="password"
+          id="githubToken"
+          placeholder="ghp_xxxxxxxxxxxx"
+        />
+        <small
+          style="color: #666; font-size: 11px; margin-top: 4px; display: block"
+        >
+          Required for production sync. Get from: GitHub → Settings → Developer
+          settings → Personal access tokens
+        </small>
+      </div>
+
       <button id="syncButton">Sync Tokens</button>
 
       <button id="restartButton" class="secondary">Restart Dev Server</button>
@@ -164,9 +187,21 @@
       const fileNameInput = document.getElementById("fileName");
       const serverUrlInput = document.getElementById("serverUrl");
       const nodeIdInput = document.getElementById("nodeId");
+      const syncModeSelect = document.getElementById("syncMode");
+      const githubTokenSection = document.getElementById("githubTokenSection");
+      const githubTokenInput = document.getElementById("githubToken");
       const syncButton = document.getElementById("syncButton");
       const restartButton = document.getElementById("restartButton");
       const statusDiv = document.getElementById("status");
+
+      // Show/hide GitHub token field based on sync mode
+      syncModeSelect.addEventListener("change", () => {
+        if (syncModeSelect.value === "production") {
+          githubTokenSection.style.display = "flex";
+        } else {
+          githubTokenSection.style.display = "none";
+        }
+      });
 
       // Listen for messages from plugin code
       window.onmessage = (event) => {
@@ -179,10 +214,24 @@
 
         if (msg.type === "success") {
           showStatus("success", msg.message);
-          if (msg.result && msg.result.tokens) {
-            const tokens = msg.result.tokens;
-            const summary = `Colors: ${tokens.colors}, Radius: ${tokens.borderRadius}, Spacing: ${tokens.spacing}, Shadows: ${tokens.shadows}`;
-            statusDiv.innerHTML += `<div class="token-summary"><strong>Synced:</strong> ${summary}</div>`;
+          if (msg.result) {
+            if (msg.result.tokens) {
+              // Local sync result
+              const tokens = msg.result.tokens;
+              const summary = `Colors: ${tokens.colors}, Radius: ${tokens.borderRadius}, Spacing: ${tokens.spacing}, Shadows: ${tokens.shadows}`;
+              statusDiv.innerHTML += `<div class="token-summary"><strong>Synced:</strong> ${summary}</div>`;
+            } else if (msg.result.commitSha) {
+              // Production sync result
+              const commitSha = msg.result.commitSha.substring(0, 7);
+              const branch = msg.result.branch || "main";
+              let summary = `✅ Committed to ${branch} (${commitSha})`;
+              if (msg.result.prUrl) {
+                summary += `<br><a href="${msg.result.prUrl}" target="_blank" style="color: #18a0fb;">View PR →</a>`;
+              } else {
+                summary += `<br>🚀 Vercel will auto-deploy shortly!`;
+              }
+              statusDiv.innerHTML += `<div class="token-summary">${summary}</div>`;
+            }
           }
         }
 
@@ -209,9 +258,21 @@
       };
 
       syncButton.addEventListener("click", () => {
+        const syncMode = syncModeSelect.value;
+        const githubToken = githubTokenInput.value.trim();
+
+        // Validate GitHub token for production sync
+        if (syncMode === "production" && !githubToken) {
+          showStatus("error", "GitHub token is required for production sync");
+          return;
+        }
+
         syncButton.disabled = true;
         statusDiv.className = "status info";
-        statusDiv.textContent = "Syncing tokens...";
+        statusDiv.textContent =
+          syncMode === "production"
+            ? "Syncing to GitHub..."
+            : "Syncing tokens...";
         statusDiv.style.display = "block";
 
         parent.postMessage(
@@ -220,15 +281,20 @@
               type: "sync-tokens",
               serverUrl: serverUrlInput.value,
               nodeId: nodeIdInput.value,
+              syncMode: syncMode,
+              githubToken: syncMode === "production" ? githubToken : undefined,
             },
           },
           "*"
         );
 
-        // Re-enable button after 2 seconds
-        setTimeout(() => {
-          syncButton.disabled = false;
-        }, 2000);
+        // Re-enable button after 5 seconds (longer for production)
+        setTimeout(
+          () => {
+            syncButton.disabled = false;
+          },
+          syncMode === "production" ? 5000 : 2000
+        );
       });
 
       restartButton.addEventListener("click", () => {

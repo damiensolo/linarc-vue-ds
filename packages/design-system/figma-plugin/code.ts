@@ -66,8 +66,10 @@ figma.ui.onmessage = async (msg) => {
         variables[name] = stringValue;
       });
 
-      // Send to local server
+      // Send to sync server (handles both local and production)
       const serverUrl = msg.serverUrl || "http://localhost:3001";
+      const syncMode = msg.syncMode || "local";
+      
       const response = await fetch(`${serverUrl}/api/sync-tokens`, {
         method: "POST",
         headers: {
@@ -77,6 +79,9 @@ figma.ui.onmessage = async (msg) => {
           variables,
           fileKey,
           nodeId: msg.nodeId || "0:1",
+          syncMode: syncMode,
+          githubToken: msg.githubToken,
+          createPR: syncMode === "production", // Create PR for production sync
         }),
       });
 

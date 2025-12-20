@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter design-system build && pnpm --filter nuxt-app build:vercel",
+  "buildCommand": "node scripts/vercel-build.js",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nuxtjs",
   "outputDirectory": ".vercel/output"

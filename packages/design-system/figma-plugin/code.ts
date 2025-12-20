@@ -72,7 +72,7 @@ figma.ui.onmessage = async (msg) => {
       
       // Auto-start server if not running
       try {
-        const helperUrl = "http://localhost:3000";
+        const helperUrl = "http://localhost:2999";
         const checkResponse = await fetch(`${helperUrl}/check-sync-server`, {
           method: "GET",
           signal: AbortSignal.timeout(2000),

@@ -88,7 +88,7 @@ I can create a Windows service that:
 
 ### "Cannot connect to helper"
 - Make sure helper is running: `pnpm --filter design-system dev:auto-start`
-- Check port 3000 is available
+- Check port 2999 is available (helper uses 2999, Nuxt uses 3000)
 
 ### "Helper started but server won't start"
 - Check if ports 3001-3005 are available

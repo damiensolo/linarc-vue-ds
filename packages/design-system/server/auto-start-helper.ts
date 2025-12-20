@@ -17,7 +17,7 @@ const __dirname = dirname(__filename);
 const PACKAGE_ROOT = resolve(__dirname, "..");
 const REPO_ROOT = resolve(__dirname, "../..");
 
-const HELPER_PORT = 3000; // Different port for the helper
+const HELPER_PORT = 2999; // Different port for the helper (avoid conflict with Nuxt on 3000)
 const SYNC_SERVER_PORT = 3001;
 const SYNC_SERVER_SCRIPT = resolve(PACKAGE_ROOT, "server/local-sync-server.ts");
 
@@ -234,7 +234,8 @@ helperServer.listen(HELPER_PORT, () => {
   console.log(`🤖 Auto-start helper running on http://localhost:${HELPER_PORT}`);
   console.log(`📡 Ready to auto-start sync server when plugin connects`);
   console.log(`\n💡 Keep this running in the background!`);
-  console.log(`   The Figma plugin will automatically start the sync server when needed.\n`);
+  console.log(`   The Figma plugin will automatically start the sync server when needed.`);
+  console.log(`   Note: Helper uses port ${HELPER_PORT} (Nuxt uses 3000)\n`);
 });
 
 // Graceful shutdown

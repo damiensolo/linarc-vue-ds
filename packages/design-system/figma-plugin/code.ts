@@ -73,26 +73,22 @@ figma.ui.onmessage = async (msg) => {
       // Auto-start server if not running
       try {
         const helperUrl = "http://localhost:2999";
-        const checkController = new AbortController();
-        const checkTimeout = setTimeout(() => checkController.abort(), 2000);
-        const checkResponse = await fetch(`${helperUrl}/check-sync-server`, {
-          method: "GET",
-          signal: checkController.signal,
-        });
-        clearTimeout(checkTimeout);
+        const checkResponse = await fetchWithTimeout(
+          `${helperUrl}/check-sync-server`,
+          { method: "GET" },
+          2000
+        );
         
         if (checkResponse.ok) {
           const checkData = await checkResponse.json();
           if (!checkData.running) {
             // Server not running, try to start it
             console.log("🔄 Sync server not running, attempting to start...");
-            const startController = new AbortController();
-            const startTimeout = setTimeout(() => startController.abort(), 15000);
-            const startResponse = await fetch(`${helperUrl}/start-sync-server`, {
-              method: "POST",
-              signal: startController.signal,
-            });
-            clearTimeout(startTimeout);
+            const startResponse = await fetchWithTimeout(
+              `${helperUrl}/start-sync-server`,
+              { method: "POST" },
+              15000
+            );
             
             if (startResponse.ok) {
               const startData = await startResponse.json();
@@ -113,38 +109,35 @@ figma.ui.onmessage = async (msg) => {
       }
       
       // Add timeout and better error handling
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-
       let response: Response;
       try {
-        response = await fetch(`${serverUrl}/api/sync-tokens`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        response = await fetchWithTimeout(
+          `${serverUrl}/api/sync-tokens`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              variables,
+              fileKey,
+              nodeId: msg.nodeId || "0:1",
+              syncMode: syncMode,
+              githubToken: msg.githubToken,
+              createPR: syncMode === "production", // Create PR for production sync
+            }),
           },
-          body: JSON.stringify({
-            variables,
-            fileKey,
-            nodeId: msg.nodeId || "0:1",
-            syncMode: syncMode,
-            githubToken: msg.githubToken,
-            createPR: syncMode === "production", // Create PR for production sync
-          }),
-          signal: controller.signal,
-        });
+          30000 // 30 second timeout
+        );
       } catch (fetchError: any) {
-        clearTimeout(timeoutId);
-        if (fetchError.name === "AbortError") {
+        if (fetchError.message && fetchError.message.includes("timeout")) {
           throw new Error("Request timeout: Server took too long to respond");
         }
-        if (fetchError.message?.includes("Failed to fetch")) {
+        if (fetchError.message && fetchError.message.includes("Failed to fetch")) {
           throw new Error(`Cannot connect to sync server at ${serverUrl}. Make sure the server is running: pnpm --filter design-system dev:sync-server`);
         }
         throw fetchError;
       }
-      
-      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMessage = "Failed to sync tokens";
@@ -225,4 +218,14 @@ function rgbToHex(rgb: RGB): string {
   const g = Math.round(rgb.g * 255);
   const b = Math.round(rgb.b * 255);
   return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+}
+
+// Helper function to fetch with timeout (AbortController not available in Figma)
+function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number): Promise<Response> {
+  return Promise.race([
+    fetch(url, options),
+    new Promise<Response>((_, reject) =>
+      setTimeout(() => reject(new Error("Request timeout")), timeoutMs)
+    ),
+  ]);
 }

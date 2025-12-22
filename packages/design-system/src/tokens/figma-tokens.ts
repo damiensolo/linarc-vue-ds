@@ -2,7 +2,7 @@
  * Figma Design Tokens
  * 
  * Auto-synced from Figma via MCP.
- * Last synced: 2025-12-22T18:06:16.214Z
+ * Last synced: 2025-12-22T18:12:12.692Z
  * File: rDLR9ZCB0Dq2AmRvxrifds
  */
 

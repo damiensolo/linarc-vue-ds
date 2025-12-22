@@ -151,14 +151,35 @@ pnpm build:pages
 pnpm preview
 ```
 
-**Full Guide:** See [`DEPLOYMENT.md`](DEPLOYMENT.md) for detailed deployment instructions.
+**Full Guide:** See [`docs/deployment/README.md`](docs/deployment/README.md) for detailed deployment instructions.
 
 ## Documentation
 
-- **[Deployment Guide](DEPLOYMENT.md)** - Complete guide for deploying to Vercel and GitHub Pages
-- **[Figma Integration Guide](packages/design-system/FIGMA_INTEGRATION.md)** - Complete guide for syncing tokens from Figma
+### Getting Started
+
+- **[Quick Start Guide](docs/guides/quickstart.md)** - Get up and running quickly
+- **[Workflow Guide](docs/guides/workflow.md)** - Understanding the Figma plugin workflow
+
+### Deployment
+
+- **[Deployment Guide](docs/deployment/README.md)** - Complete guide for deploying to Vercel and GitHub Pages
+- **[Deployment Checklist](docs/deployment/checklist.md)** - Pre-deployment checklist
+
+### Figma Integration
+
+- **[Token Sync Guide](docs/figma/token-sync.md)** - Complete guide for syncing tokens from Figma
+- **[Figma Troubleshooting](docs/figma/troubleshooting.md)** - Common Figma plugin issues
+- **[Figma Integration Guide](packages/design-system/FIGMA_INTEGRATION.md)** - Detailed Figma setup
+
+### Troubleshooting
+
+- **[Quick Fixes](docs/troubleshooting/quick-fixes.md)** - Common issues and solutions
+
+### Package Documentation
+
 - **[Design System README](packages/design-system/README.md)** - Component library documentation
 - **[Nuxt App README](packages/nuxt-app/README.md)** - Application documentation
+- **[Cursor Prompts](CURSOR_PROMPTS.md)** - AI prompt templates for development
 
 ## Contributing
 

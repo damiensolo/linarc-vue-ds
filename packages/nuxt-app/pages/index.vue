@@ -131,6 +131,81 @@
         </div>
       </CardContent>
     </Card>
+
+    <!-- Toggle Showcase -->
+    <Card class="mt-8">
+      <CardHeader>
+        <CardTitle>Toggle</CardTitle>
+        <CardDescription>
+          Different sizes, types, and states of Toggle components
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="space-y-6">
+          <div>
+            <h3 class="text-sm font-medium mb-4">Sizes - Default Type</h3>
+            <div class="flex items-center gap-6 flex-wrap">
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.defaultS" size="S" type="Default" label="Toggle" />
+                <span class="text-xs text-muted-foreground">Small</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.defaultL" size="L" type="Default" label="Toggle" />
+                <span class="text-xs text-muted-foreground">Large</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-medium mb-4">Types - Large Size</h3>
+            <div class="flex items-center gap-6 flex-wrap">
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.defaultL" size="L" type="Default" label="Toggle" />
+                <span class="text-xs text-muted-foreground">Default</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.iconL" size="L" type="Icon" label="Toggle" />
+                <span class="text-xs text-muted-foreground">Icon</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.shortL" size="L" type="Short" label="Toggle" />
+                <span class="text-xs text-muted-foreground">Short</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-medium mb-4">All Variants</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.defaultS" size="S" type="Default" label="Toggle" />
+                <span class="text-xs text-muted-foreground">S Default</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.iconS" size="S" type="Icon" label="Toggle" />
+                <span class="text-xs text-muted-foreground">S Icon</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.shortS" size="S" type="Short" label="Toggle" />
+                <span class="text-xs text-muted-foreground">S Short</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.defaultL" size="L" type="Default" label="Toggle" />
+                <span class="text-xs text-muted-foreground">L Default</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.iconL" size="L" type="Icon" label="Toggle" />
+                <span class="text-xs text-muted-foreground">L Icon</span>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Toggle v-model:checked="toggleStates.shortL" size="L" type="Short" label="Toggle" />
+                <span class="text-xs text-muted-foreground">L Short</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   </div>
 </template>
 
@@ -146,8 +221,17 @@ import {
   Checkbox,
   Input,
   FloatingActionButton,
+  Toggle,
 } from '@linarc/design-system'
 
 const termsChecked = ref(false)
 const newsletterChecked = ref(false)
+const toggleStates = ref({
+  defaultS: false,
+  defaultL: false,
+  iconS: false,
+  iconL: false,
+  shortS: false,
+  shortL: false,
+})
 </script>

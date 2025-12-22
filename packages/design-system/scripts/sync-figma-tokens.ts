@@ -38,8 +38,71 @@ const FIGMA_CONFIG = {
 }
 
 /**
+ * Resolve alias variables to their actual values
+ * Handles semantic/alias variables that reference other variables
+ */
+function resolveAliases(
+  variableDefs: Record<string, any>,
+  resolvedValues: Map<string, string> = new Map()
+): Record<string, string> {
+  const resolved: Record<string, string> = {}
+  
+  // First pass: collect all direct values (non-aliases)
+  Object.entries(variableDefs).forEach(([name, value]) => {
+    if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgb') || value.startsWith('hsl'))) {
+      resolved[name] = value
+      resolvedValues.set(name, value)
+    }
+  })
+  
+  // Second pass: resolve aliases by looking for matching variable names
+  // Figma aliases often reference variables with similar names or in Background/Text collections
+  Object.entries(variableDefs).forEach(([name, value]) => {
+    if (resolved[name]) {
+      return // Already resolved
+    }
+    
+    // Check if this is an alias - look for a corresponding variable
+    // Common patterns:
+    // - "bg-strong" might alias to "Background/bg-strong"
+    // - "text-body" might alias to "Text/text-body"
+    const possibleAliases = [
+      `Background/${name}`,
+      `Text/${name}`,
+      name.replace(/^bg-/, 'Background/bg-'),
+      name.replace(/^text-/, 'Text/text-'),
+    ]
+    
+    for (const aliasName of possibleAliases) {
+      if (variableDefs[aliasName] && typeof variableDefs[aliasName] === 'string') {
+        const aliasValue = variableDefs[aliasName]
+        if (aliasValue.startsWith('#') || aliasValue.startsWith('rgb') || aliasValue.startsWith('hsl')) {
+          resolved[name] = aliasValue
+          resolvedValues.set(name, aliasValue)
+          break
+        }
+      }
+    }
+    
+    // If still not resolved and value is a string color, use it directly
+    if (!resolved[name] && typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgb') || value.startsWith('hsl'))) {
+      resolved[name] = value
+      resolvedValues.set(name, value)
+    }
+    
+    // If value is a direct color value, use it
+    if (!resolved[name] && typeof value === 'string' && value.match(/^#[0-9A-Fa-f]{6}$/)) {
+      resolved[name] = value
+    }
+  })
+  
+  return resolved
+}
+
+/**
  * Parse Figma variable definitions from MCP response
  * This function handles the actual format returned by Figma MCP
+ * Now includes alias resolution for semantic variables
  */
 function parseFigmaVariables(variableDefs: Record<string, any>): {
   variables: FigmaVariable[]
@@ -47,23 +110,34 @@ function parseFigmaVariables(variableDefs: Record<string, any>): {
 } {
   const variables: FigmaVariable[] = []
   const collections: FigmaVariableCollection[] = []
+  
+  // Resolve aliases first
+  const resolvedValues = resolveAliases(variableDefs)
 
   // Parse variable definitions
   // Format: { "variable-name": "value" }
   Object.entries(variableDefs).forEach(([name, value]) => {
+    // Use resolved value if available, otherwise use original
+    const finalValue = resolvedValues[name] || value
+    
     // Determine type from value
     let resolvedType: FigmaVariable['resolvedType'] = 'STRING'
-    let parsedValue: any = value
+    let parsedValue: any = finalValue
 
-    if (typeof value === 'string') {
+    if (typeof finalValue === 'string') {
       // Check if it's a color (hex, rgb, hsl)
-      if (value.startsWith('#') || value.startsWith('rgb') || value.startsWith('hsl')) {
+      if (finalValue.startsWith('#') || finalValue.startsWith('rgb') || finalValue.startsWith('hsl')) {
         resolvedType = 'COLOR'
-      } else if (!isNaN(parseFloat(value)) && value.includes('px')) {
+        // Ensure hex colors are valid
+        if (finalValue.startsWith('#') && !finalValue.match(/^#[0-9A-Fa-f]{6}$/)) {
+          console.warn(`⚠️  Invalid color value for ${name}: ${finalValue}`)
+          return // Skip invalid colors
+        }
+      } else if (!isNaN(parseFloat(finalValue)) && finalValue.includes('px')) {
         resolvedType = 'FLOAT'
-        parsedValue = parseFloat(value)
+        parsedValue = parseFloat(finalValue)
       }
-    } else if (typeof value === 'number') {
+    } else if (typeof finalValue === 'number') {
       resolvedType = 'FLOAT'
     }
 

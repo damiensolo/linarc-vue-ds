@@ -40,7 +40,28 @@ figma.ui.onmessage = async (msg) => {
       }
 
       // Convert Figma variables to format expected by sync function
+      // IMPORTANT: Preserve alias structure so syncFromFigmaMCP can resolve them
       const variables: Record<string, any> = {};
+      
+      // Build a map of variables by ID and name for alias resolution
+      const variableById = new Map<string, Variable>();
+      const variableIdByName = new Map<string, string>(); // Map name -> ID
+      
+      // Build a map of collections by ID for collection name lookup
+      const collectionById = new Map<string, VariableCollection>();
+      try {
+        const collections = figma.variables.getLocalVariableCollections();
+        collections.forEach((collection) => {
+          collectionById.set(collection.id, collection);
+        });
+      } catch (error) {
+        console.warn("Could not fetch collections:", error);
+      }
+      
+      localVariables.forEach((v) => {
+        variableById.set(v.id, v);
+        variableIdByName.set(v.name, v.id);
+      });
 
       localVariables.forEach((variable) => {
         const name = variable.name;
@@ -50,20 +71,89 @@ figma.ui.onmessage = async (msg) => {
         const modeId = Object.keys(valuesByMode)[0];
         const value = valuesByMode[modeId];
 
-        // Convert value based on variable type
-        let stringValue: string;
+        // Get collection information for categorization
+        const collection = variable.variableCollectionId 
+          ? collectionById.get(variable.variableCollectionId)
+          : null;
+        const collectionName = collection ? collection.name : undefined;
 
-        if (variable.resolvedType === "COLOR") {
-          // Convert RGB to hex
+        // Normalize variable ID format (Figma might use different formats)
+        const normalizedId = variable.id.startsWith("VariableID:") 
+          ? variable.id 
+          : `VariableID:${variable.id}`;
+        
+        // Check if this is an alias variable
+        // In Figma Plugin API, alias values are VariableAlias objects with an 'id' property
+        // They don't have 'r', 'g', 'b' properties like RGB objects
+        if (value && typeof value === "object" && "id" in value && !("r" in value) && !("g" in value)) {
+          // This is an alias - preserve the structure for resolution
+          const alias = value as VariableAlias;
+          const referencedVar = variableById.get(alias.id);
+          
+          // Normalize the alias ID format
+          const aliasId = alias.id.startsWith("VariableID:") 
+            ? alias.id 
+            : `VariableID:${alias.id}`;
+          
+          // Store alias with both ID and name reference for better resolution
+          // Include resolvedType and collection so sync script can categorize correctly
+          variables[name] = {
+            type: "VARIABLE_ALIAS",
+            id: aliasId,
+            resolvedType: variable.resolvedType, // Include type for categorization
+            collection: collectionName, // Include collection name for categorization
+            // Include referenced variable name if available (helps with resolution)
+            name: referencedVar ? referencedVar.name : undefined,
+          };
+        } else if (variable.resolvedType === "COLOR") {
+          // Direct color value - convert RGB to hex
           const rgb = value as RGB;
-          stringValue = rgbToHex(rgb);
+          const hexValue = rgbToHex(rgb);
+          // Include collection metadata for categorization
+          if (collectionName) {
+            variables[name] = {
+              value: hexValue,
+              resolvedType: "COLOR",
+              collection: collectionName,
+            };
+          } else {
+            variables[name] = hexValue;
+          }
+          // Also store by normalized ID for alias resolution (without metadata)
+          variables[normalizedId] = hexValue;
         } else if (variable.resolvedType === "FLOAT") {
-          stringValue = String(value);
+          // For FLOAT values, include metadata to help with categorization
+          const numValue = typeof value === "number" ? value : parseFloat(String(value));
+          // Store as object with type info so sync script can categorize correctly
+          variables[name] = {
+            value: numValue,
+            resolvedType: "FLOAT",
+            collection: collectionName, // Include collection name for categorization
+          };
+          // Also store by normalized ID for alias resolution
+          variables[normalizedId] = {
+            value: numValue,
+            resolvedType: "FLOAT",
+          };
+        } else if (variable.resolvedType === "STRING") {
+          // For STRING values, include metadata for typography/shadow detection
+          const stringValue = String(value);
+          variables[name] = {
+            value: stringValue,
+            resolvedType: "STRING",
+            collection: collectionName, // Include collection name for categorization
+          };
+          // Also store by normalized ID for alias resolution
+          variables[normalizedId] = stringValue;
         } else {
-          stringValue = String(value);
+          const stringValue = String(value);
+          variables[name] = collectionName ? {
+            value: stringValue,
+            resolvedType: variable.resolvedType,
+            collection: collectionName,
+          } : stringValue;
+          variables[normalizedId] = stringValue;
         }
-
-        variables[name] = stringValue;
       });
 
       // Send to sync server (handles both local and production)
@@ -218,6 +308,15 @@ function rgbToHex(rgb: RGB): string {
   const g = Math.round(rgb.g * 255);
   const b = Math.round(rgb.b * 255);
   return `#${[r, g, b].map((x) => x.toString(16).padStart(2, "0")).join("")}`;
+}
+
+// Helper function to get variable name by ID (for alias resolution)
+function getVariableNameById(
+  id: string,
+  variables: Variable[]
+): string | undefined {
+  const variable = variables.find((v) => v.id === id);
+  return variable ? variable.name : undefined;
 }
 
 // Helper function to fetch with timeout (AbortController not available in Figma)

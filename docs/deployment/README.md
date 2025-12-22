@@ -1,6 +1,6 @@
 # Deployment Guide
 
-This project supports deployment to both **Vercel** (recommended) and **GitHub Pages** (backup). Both platforms are configured and ready to use.
+Complete guide for deploying the Linarc Vue Design System to Vercel and GitHub Pages.
 
 ## Quick Start
 
@@ -68,7 +68,7 @@ vercel --prod
 - ✅ Uses static site generation (SSG)
 - ✅ Good backup option if Vercel is unavailable
 
-## Deployment Configuration
+## Configuration
 
 ### Vercel Configuration
 
@@ -135,22 +135,6 @@ pnpm build:pages
 pnpm preview
 ```
 
-**Step by step:**
-
-```bash
-# 1. Build design system
-pnpm build:ds
-
-# 2a. Build Nuxt (SSR for Vercel)
-pnpm --filter nuxt-app build
-
-# 2 b. Generate static (SSG for GitHub Pages)
-pnpm --filter nuxt-app generate
-
-# 3. Preview
-pnpm preview
-```
-
 ### Production Build
 
 **Vercel:**
@@ -181,25 +165,6 @@ Set environment variables in GitHub:
 - Add secrets as needed
 - Access in workflow with `${{ secrets.SECRET_NAME }}`
 
-## Preview Deployments
-
-### Vercel
-
-Every pull request automatically gets a preview deployment:
-
-- URL format: `https://your-project-git-branch.vercel.app`
-- Share preview URL in PR comments
-- Preview updates automatically on new commits
-- Full SSR support in previews
-
-### GitHub Pages
-
-Currently deploys only from `main` branch. To enable PR previews:
-
-1. Update `.github/workflows/deploy.yml` to add PR preview job
-2. Use GitHub Actions artifacts for PR previews
-3. Or use Vercel for previews, GitHub Pages for production
-
 ## Troubleshooting
 
 ### Vercel Deployment Issues
@@ -228,6 +193,24 @@ Currently deploys only from `main` branch. To enable PR previews:
 - Check workspace dependencies are correct
 - Verify `@linarc/design-system` is in `package.json`
 
+**Vercel Not Connected to GitHub:**
+
+1. Go to Vercel Dashboard → Your Project → Settings → Git
+2. Verify repository is connected
+3. If not connected: Click "Connect Git Repository" and authorize
+
+**Wrong Branch Watched:**
+
+1. Go to Vercel Dashboard → Your Project → Settings → Git
+2. Check "Production Branch" setting
+3. Ensure it's set to `main` (or your default branch)
+
+**Cache Issues:**
+
+1. Go to Vercel Dashboard → Your Project → Deployments
+2. Click "Redeploy" → "Use existing Build Cache" → **Uncheck**
+3. Or clear cache via CLI: `vercel --force`
+
 ### GitHub Pages Issues
 
 **Build fails:**
@@ -248,80 +231,18 @@ Currently deploys only from `main` branch. To enable PR previews:
 - For root domain: `baseURL: "/"`
 - For subdirectory: `baseURL: "/repository-name/"`
 
-## Deployment Workflow
+## Deployment Checklist
 
-### Standard Workflow
+Before deploying, ensure:
 
-1. **Make changes** in your code
-2. **Test locally**:
-
-   ```bash
-   # For Vercel (SSR)
-   pnpm build:ds && pnpm --filter nuxt-app build
-   pnpm preview
-
-   # For GitHub Pages (SSG)
-   pnpm build:pages
-   pnpm preview
-   ```
-
-3. **Commit and push**:
-   ```bash
-   git add .
-   git commit -m "feat: update design tokens"
-   git push origin main
-   ```
-4. **Automatic deployment**:
-   - **Vercel**: Deploys immediately (SSR)
-   - **GitHub Pages**: Deploys via GitHub Actions (SSG)
-
-### With Production Sync (Coming Soon)
-
-1. **Designer updates tokens** in Figma
-2. **Sync to production** via Figma plugin
-3. **Plugin creates PR** with token changes
-4. **Preview deployment** automatically created (Vercel)
-5. **Review and merge** PR
-6. **Production deployment** automatically triggered (both platforms)
-
-## Monitoring
-
-### Vercel
-
-- **Analytics**: Built-in in Vercel Dashboard
-- **Logs**: Available in project dashboard
-- **Performance**: Real-time metrics
-- **Deployments**: History and rollback options
-
-### GitHub Pages
-
-- **Actions Logs**: Check `.github/workflows/deploy.yml` runs
-- **Pages Status**: Repository Settings → Pages
-- **Deployment History**: Actions tab → Deploy to GitHub Pages workflow
-
-## Best Practices
-
-1. **Always test locally** before pushing
-
-   ```bash
-   # Test Vercel build
-   pnpm build:ds && pnpm --filter nuxt-app build
-
-   # Test GitHub Pages build
-   pnpm build:pages
-   ```
-
-2. **Use preview deployments** for review (Vercel)
-
-3. **Monitor build times** and optimize if needed
-
-4. **Set up custom domains** for production
-
-5. **Use environment variables** for secrets
-
-6. **Enable branch protection** on `main` branch
-
-7. **Keep both platforms** as backup options
+- [x] Design system builds successfully
+- [x] Nuxt app builds successfully (both SSR and SSG)
+- [x] GitHub Actions workflow is configured
+- [x] All dependencies are in package.json
+- [x] pnpm-lock.yaml is committed
+- [ ] GitHub Pages is enabled in repository settings
+- [ ] Test build locally with `pnpm build:pages`
+- [ ] Preview works with `pnpm preview`
 
 ## Platform Comparison
 

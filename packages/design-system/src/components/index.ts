@@ -11,3 +11,4 @@ export { default as CardFooter } from "./ui/card/CardFooter.vue";
 export { default as Checkbox } from "./ui/checkbox/Checkbox.vue";
 export { default as Input } from "./ui/input/Input.vue";
 export { default as FloatingActionButton } from "./ui/floating-action-button/FloatingActionButton.vue";
+export { default as Toggle } from "./ui/toggle/Toggle.vue";

@@ -18,23 +18,8 @@
       "@linarc/design-system": ["../design-system/src"],
       "@linarc/design-system/*": ["../design-system/src/*"]
     },
-    "types": [
-      "@nuxt/types",
-      "@pinia/nuxt",
-      "@vueuse/core",
-      "@vueuse/nuxt"
-    ]
+    "types": ["@pinia/nuxt", "@vueuse/core", "@vueuse/nuxt"]
   },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.vue",
-    ".nuxt/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    ".nuxt",
-    ".output"
-  ]
+  "include": ["**/*.ts", "**/*.tsx", "**/*.vue", ".nuxt/**/*"],
+  "exclude": ["node_modules", ".nuxt", ".output"]
 }
-

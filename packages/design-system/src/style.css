@@ -24,6 +24,12 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+
+    /* Figma tokens */
+    --bg-strong: #dd2929;
+    --bg-subtle: #e2e8f0;
+    --text-body: #18181b;
+    --bg-body: #ffffff;
   }
 
   .dark {
@@ -57,4 +63,3 @@
     @apply bg-background text-foreground;
   }
 }
-

@@ -3,12 +3,14 @@
 ## ✅ Build System Status
 
 ### Design System Build
+
 - ✅ **Fixed**: TypeScript module errors (empty composables/types files)
 - ✅ **Fixed**: Missing typography property in figmaTokens
 - ✅ **Fixed**: vue-tsc compatibility issue (using vite-plugin-dts instead)
 - ✅ **Status**: Builds successfully
 
 ### Nuxt App Build
+
 - ✅ **Configuration**: SSR/SSG support configured
 - ✅ **GitHub Pages**: BaseURL configured dynamically
 - ✅ **Status**: Ready for deployment
@@ -16,8 +18,9 @@
 ## ✅ GitHub Actions Workflow
 
 ### `.github/workflows/deploy.yml`
+
 - ✅ **Triggers**: Push to main, workflow_dispatch, PRs
-- ✅ **Build Steps**: 
+- ✅ **Build Steps**:
   - Checkout repository
   - Setup pnpm and Node.js
   - Install dependencies
@@ -28,19 +31,16 @@
 
 ## ✅ Configuration Files
 
-### Removed
-- ❌ `vercel.json` - Removed (Vercel deployment issues)
-- ❌ Vercel deployment scripts from package.json
-- ❌ Vercel references from README
-
 ### Active
+
 - ✅ `.github/workflows/deploy.yml` - GitHub Pages deployment
 - ✅ `packages/nuxt-app/nuxt.config.ts` - Deployment configuration
-- ✅ `DEPLOYMENT.md` - Complete deployment guide
+- ✅ `vercel.json` - Vercel deployment configuration
 
 ## ✅ Build Commands
 
 ### Root Level
+
 ```bash
 pnpm build:ds          # Build design system ✅
 pnpm build:app         # Build Nuxt app (SSR) ✅
@@ -49,11 +49,13 @@ pnpm preview           # Preview production build ✅
 ```
 
 ### Design System
+
 ```bash
 pnpm --filter design-system build  # ✅ Working
 ```
 
 ### Nuxt App
+
 ```bash
 pnpm --filter nuxt-app build       # SSR build ✅
 pnpm --filter nuxt-app generate    # SSG build ✅
@@ -62,11 +64,13 @@ pnpm --filter nuxt-app generate    # SSG build ✅
 ## 🚀 Deployment Steps
 
 ### 1. Enable GitHub Pages
+
 - [ ] Go to repository Settings → Pages
 - [ ] Source: Select "GitHub Actions"
 - [ ] Save
 
 ### 2. Test Build Locally
+
 ```bash
 # Test GitHub Pages build
 pnpm build:pages
@@ -74,6 +78,7 @@ pnpm preview
 ```
 
 ### 3. Deploy
+
 ```bash
 # Commit and push
 git add .
@@ -82,6 +87,7 @@ git push origin main
 ```
 
 ### 4. Verify
+
 - [ ] Check GitHub Actions tab
 - [ ] Verify workflow completes successfully
 - [ ] Check site is accessible
@@ -92,7 +98,6 @@ git push origin main
 1. ✅ **vue-tsc compatibility**: Fixed by using vite-plugin-dts
 2. ✅ **Empty module exports**: Fixed by adding empty exports
 3. ✅ **Missing typography**: Fixed by adding empty typography object
-4. ✅ **Vercel deployment**: Removed (using GitHub Pages only)
 
 ## 📋 Pre-Deployment Checklist
 
@@ -118,13 +123,6 @@ Once deployment is verified:
 5. ✅ Enable production sync from Figma plugin
 6. ✅ Configure branch protection
 
-## 📚 Documentation
-
-- **Deployment Guide**: [`DEPLOYMENT.md`](DEPLOYMENT.md)
-- **GitHub Actions Workflow**: [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)
-- **Nuxt Config**: [`packages/nuxt-app/nuxt.config.ts`](packages/nuxt-app/nuxt.config.ts)
-
 ---
 
-**Status**: ✅ Ready for deployment to GitHub Pages
-
+**Status**: ✅ Ready for deployment to GitHub Pages and Vercel

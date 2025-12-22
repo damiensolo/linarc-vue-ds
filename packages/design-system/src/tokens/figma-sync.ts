@@ -32,13 +32,81 @@ export interface FigmaToken {
 }
 
 /**
+ * Resolve alias variables to their actual values
+ * Handles semantic/alias variables that reference other variables
+ */
+export function resolveVariableAliases(
+  variables: FigmaVariable[],
+  variableMap: Map<string, FigmaVariable> = new Map()
+): Map<string, string | number> {
+  const resolved = new Map<string, string | number>()
+  
+  // Build variable map for quick lookup
+  variables.forEach(v => variableMap.set(v.name, v))
+  
+  // First pass: collect direct values (non-aliases)
+  variables.forEach((variable) => {
+    const firstModeId = Object.keys(variable.valuesByMode)[0]
+    const value = variable.valuesByMode[firstModeId]
+    
+    // If value is a direct color/number, store it
+    if (typeof value === 'string' && (value.startsWith('#') || value.startsWith('rgb') || value.startsWith('hsl'))) {
+      resolved.set(variable.name, value)
+    } else if (typeof value === 'number') {
+      resolved.set(variable.name, value)
+    }
+  })
+  
+  // Second pass: resolve aliases by looking for matching variable names
+  // Common Figma alias patterns:
+  // - "bg-strong" might alias to "Background/bg-strong"
+  // - "text-body" might alias to "Text/text-body"
+  variables.forEach((variable) => {
+    if (resolved.has(variable.name)) {
+      return // Already resolved
+    }
+    
+    const firstModeId = Object.keys(variable.valuesByMode)[0]
+    const value = variable.valuesByMode[firstModeId]
+    
+    // Check if this is an alias - look for a corresponding variable
+    const possibleAliases = [
+      `Background/${variable.name}`,
+      `Text/${variable.name}`,
+      variable.name.replace(/^bg-/, 'Background/bg-'),
+      variable.name.replace(/^text-/, 'Text/text-'),
+    ]
+    
+    for (const aliasName of possibleAliases) {
+      const aliasVar = variableMap.get(aliasName)
+      if (aliasVar) {
+        const aliasModeId = Object.keys(aliasVar.valuesByMode)[0]
+        const aliasValue = aliasVar.valuesByMode[aliasModeId]
+        if (typeof aliasValue === 'string' && (aliasValue.startsWith('#') || aliasValue.startsWith('rgb') || aliasValue.startsWith('hsl'))) {
+          resolved.set(variable.name, aliasValue)
+          break
+        }
+      }
+    }
+  })
+  
+  return resolved
+}
+
+/**
  * Converts Figma variables to design tokens
+ * Now includes alias resolution for semantic variables
  */
 export function convertFigmaVariablesToTokens(
   variables: FigmaVariable[],
   collections: FigmaVariableCollection[]
 ): FigmaToken[] {
   const tokens: FigmaToken[] = []
+  
+  // Resolve aliases first
+  const variableMap = new Map<string, FigmaVariable>()
+  variables.forEach(v => variableMap.set(v.name, v))
+  const resolvedValues = resolveVariableAliases(variables, variableMap)
 
   variables.forEach((variable) => {
     const collection = collections.find((c) => c.id === variable.variableCollectionId)
@@ -58,9 +126,14 @@ export function convertFigmaVariablesToTokens(
       type = 'color'
     }
 
-    // Extract value from first mode
-    const firstModeId = Object.keys(variable.valuesByMode)[0]
-    const value = variable.valuesByMode[firstModeId]
+    // Use resolved alias value if available, otherwise extract from first mode
+    let value: string | number
+    if (resolvedValues.has(variable.name)) {
+      value = resolvedValues.get(variable.name)!
+    } else {
+      const firstModeId = Object.keys(variable.valuesByMode)[0]
+      value = variable.valuesByMode[firstModeId]
+    }
 
     // Convert color value to CSS format if needed
     let tokenValue: string | number = value
@@ -69,6 +142,13 @@ export function convertFigmaVariablesToTokens(
       tokenValue = rgbToHsl(value.r * 255, value.g * 255, value.b * 255)
     } else if (type === 'spacing' && typeof value === 'number') {
       tokenValue = `${value}px`
+    } else if (type === 'color' && typeof value === 'string') {
+      // Ensure valid hex color
+      if (value.startsWith('#') && !value.match(/^#[0-9A-Fa-f]{6}$/)) {
+        console.warn(`⚠️  Invalid color value for ${variable.name}: ${value}`)
+        return // Skip invalid colors
+      }
+      tokenValue = value
     }
 
     tokens.push({

@@ -2,7 +2,7 @@
  * Figma Design Tokens
  * 
  * Auto-synced from Figma via MCP.
- * Last synced: 2025-12-23T14:10:30.179Z
+ * Last synced: 2025-12-23T14:31:59.856Z
  * File: rDLR9ZCB0Dq2AmRvxrifds
  */
 
@@ -21,7 +21,7 @@ export const figmaTokens: DesignTokens = {
     "slate-200": "#e2e8f0",
     "slate-50": "#f8fafc",
     "indigo-900": "#312e81",
-    "indigo-600": "#d41200",
+    "indigo-600": "#4f46e5",
     "indigo-500": "#6366f1",
     "indigo-800": "#3730a3",
     "indigo-300": "#a5b4fc",
@@ -31,13 +31,13 @@ export const figmaTokens: DesignTokens = {
     "indigo-100": "#e0e7ff",
     "indigo-50": "#eef2ff",
     "indigo-color": "#4f46e5",
-    "black": "#a431d9",
+    "black": "#000000",
     "white": "#ffffff",
-    "bg-strong": "#a431d9",
+    "bg-strong": "#000000",
     "bg-subtle": "#e2e8f0"
   },
   "borderRadius": {
-    "radii-xxl": "0px",
+    "radii-xxl": "999px",
     "radii-l": "16px",
     "radii-m": "8px",
     "radii-s": "6px",

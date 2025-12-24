@@ -285,3 +285,8 @@ If a prompt doesn't work as expected:
 2. Review similar existing components for patterns
 3. Break down the task into smaller steps
 4. Be more specific about file paths and requirements
+
+--- Custom DS Analysis ---
+using figma mcp get the design context from Figma file: https://www.figma.com/design/741fX93fgNrJjb7p7zlSvG/Linarc-Design-System-Testing-Base?node-id=27291-31510&t=qCi8Fzbx8uBPYlUw-1
+
+I'm switching to a new figma file with more variables and components that are not yet in the design system. I need to analyze the structure of the figma variables and components to see how add in these viriable to the design system with the primitive and semantic token structure that is already in the design system and token syscing system. Study the existing code and token syncing system to see how to best add in the new variables and components. See if there are any missing variables or components that are needed. Before adding in the new variables and components, see if there are any existing variables or components that are similar and can be reused and how those can be remapped to the new variables and components. I want to make sure the full scyching process is complete and working correctly with the existing code and token syncing system and make sure all the variables and components are added in correctly and are working correctly before adding in the new variables and building components. Give me a detailed plan of what to do and how to do it.

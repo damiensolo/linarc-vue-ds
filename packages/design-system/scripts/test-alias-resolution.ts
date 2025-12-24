@@ -102,3 +102,4 @@ console.log("   2. Check diagnostic output for bg-subtle and bg-strong");
 console.log("   3. Adjust resolution logic if needed based on actual format");
 
 
+

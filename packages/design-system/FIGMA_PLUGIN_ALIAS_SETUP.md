@@ -133,3 +133,4 @@ After syncing from Figma plugin:
 That's it! The alias resolution is now fully automated through the Figma plugin! 🎉
 
 
+

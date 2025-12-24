@@ -198,3 +198,4 @@ Semantic/
 - To use typography tokens in Tailwind, manually extend `theme.extend.fontSize`, `theme.extend.fontWeight`, etc.
 - Collection-based categorization is the most reliable method - organize variables in Figma accordingly
 
+

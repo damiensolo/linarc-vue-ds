@@ -77,3 +77,4 @@ The plugin should now:
 **Reload the plugin in Figma and try syncing again!**
 
 
+

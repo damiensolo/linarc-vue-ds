@@ -3,6 +3,7 @@
 ## ✅ Status: Alias Resolution is Working!
 
 The alias resolution code is implemented and tested. The test successfully resolved:
+
 - `bg-subtle` → `#f8fafc` ✅
 - `bg-strong` → `#0f172a` ✅
 
@@ -53,28 +54,31 @@ This confirms aliases are being resolved.
 After sync, check these files:
 
 **`packages/design-system/src/tokens/tailwind-extension.json`**
+
 ```json
 {
   "colors": {
-    "bg-subtle": "#f8fafc",  // ✅ Should be resolved, not #NaNNaNNaN
-    "bg-strong": "#0f172a"    // ✅ Should be resolved, not #NaNNaNNaN
+    "bg-subtle": "#f8fafc", // ✅ Should be resolved, not #NaNNaNNaN
+    "bg-strong": "#0f172a" // ✅ Should be resolved, not #NaNNaNNaN
   }
 }
 ```
 
 **`packages/design-system/src/tokens/figma-tokens.ts`**
+
 ```typescript
 export const figmaTokens: DesignTokens = {
   colors: {
-    "bg-subtle": "#f8fafc",  // ✅ Should be resolved
-    "bg-strong": "#0f172a"    // ✅ Should be resolved
-  }
-}
+    "bg-subtle": "#f8fafc", // ✅ Should be resolved
+    "bg-strong": "#0f172a", // ✅ Should be resolved
+  },
+};
 ```
 
 ### Step 4: Restart Dev Server
 
 After syncing tokens:
+
 ```bash
 # Stop dev server (Ctrl+C)
 pnpm dev
@@ -119,6 +123,7 @@ This will show you the exact format and whether resolution works.
 ## ✅ Expected Result
 
 After successful sync:
+
 - ✅ `bg-subtle` = resolved color (e.g., `#f8fafc`)
 - ✅ `bg-strong` = resolved color (e.g., `#0f172a`)
 - ✅ No `#NaNNaNNaN` values
@@ -133,6 +138,3 @@ After successful sync:
 5. **Test in components** (Step 5)
 
 The alias resolution code is ready - you just need to run a sync from Figma to apply it!
-
-
-
